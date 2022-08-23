@@ -24,6 +24,18 @@ class MongoDatabase {
     }
   }
 
+  static Future<void> updateExercise(ExerciseModel data) async {
+    var result = await db.collection("exercises").findOne({"_id": data.id});
+    result["name"] = data.name;
+    result["muscle"] = data.muscle;
+    result["desc"] = data.desc;
+    await db.collection("exercises").save(result);
+  }
+
+  static deleteExercise(ExerciseModel data) async {
+    await db.collection("exercises").remove(where.id(data.id));
+  }
+
   static getExercises() async {
     final arrData = await db.collection("exercises").find().toList();
     return arrData;

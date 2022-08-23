@@ -56,23 +56,23 @@ class _MyAppState extends State<MyApp> {
           onTap: (index) => setState(() => currentIndex = index),
           items: [
             BottomNavigationBarItem(
-              icon: Icon(Icons.fitness_center),
+              icon: Icon(Icons.fitness_center, size: 30,),
               label: 'Exercises',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_view_day),
+              icon: Icon(Icons.calendar_view_day, size: 30,),
               label: 'Plans',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.home_filled),
+              icon: Icon(Icons.home_filled, size: 30,),
               label: 'Home',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_month),
+              icon: Icon(Icons.calendar_month, size: 30,),
               label: 'Calendar',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.auto_graph),
+              icon: Icon(Icons.auto_graph, size: 30,),
               label: 'Progression',
             ),
           ],
