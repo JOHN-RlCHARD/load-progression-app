@@ -1,3 +1,4 @@
+import 'package:app/widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mongo_dart/mongo_dart.dart' as M;
@@ -43,8 +44,18 @@ class _ExercisePageState extends State<ExercisePage> {
             children: [
               SizedBox(height: 30,),
               Padding(
-                padding: const EdgeInsets.only( left: 25),
-                child: Text('Saved Exercises', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),),
+                padding: const EdgeInsets.only( left: 25, right: 25),
+                child: Row(
+                  children: [
+                    Text(
+                      'Saved Exercises',
+                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),),
+                    Spacer(),
+                    IconButton(
+                      onPressed: () {setState(() {});},
+                      icon: Icon(Icons.refresh),)
+                  ],
+                ),
               ),
               SizedBox(height: 30,),
               Expanded(
@@ -79,35 +90,65 @@ class _ExercisePageState extends State<ExercisePage> {
               ),
             ],
           ),
+
+          // ADD NEW EXERCISE BUTTON
           Positioned(
             bottom: 25,
             right: 25,
             child: Container(
-              height: 50,
-              width: 50,
-              decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 4,
-                    offset: Offset(1,1,),
-                  ),
-                ],
-                color: Color(0xFF404040),
-                borderRadius: BorderRadius.circular(30),
-              ),
-              child: IconButton(
-                icon: Icon(Icons.add, color: Colors.white,),
-                onPressed: () {
-                  addExercise();
-                },
-              )
+                height: 50,
+                width: 50,
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 4,
+                      offset: Offset(1,1,),
+                    ),],
+                  color: Color(0xFF404040),
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: IconButton(
+                    icon: Icon(Icons.add, color: Colors.white,),
+                    onPressed: () {
+                      showDialog(context: context, builder: (context) =>
+                          AddEditExerciseDialog(
+                            titlecontroller: titlecontroller,
+                            musclecontroller: musclecontroller,
+                            desccontroller: desccontroller,
+                            title: 'Add Exercise',
+                            icon: Icon(Icons.add),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  _clearAll();
+                                },
+                                child: dialogButton(text: 'Cancel',),
+                              ),
+                              TextButton(
+                                  onPressed: () async {
+                                    await _insertExercise(
+                                        titlecontroller.text.toString(),
+                                        musclecontroller.text.toString(),
+                                        desccontroller.text);
+                                    setState(() {});
+                                  },
+                                  child: dialogButton(text: 'Save',)
+                              ),
+                            ],
+                          )
+                      );
+                    }
+                )
             ),
           )
         ],
       ),
     );
   }
+
+  // EXERCISE CARD
   Widget exerciseCard(ExerciseModel data) {
     return Container(
       margin: EdgeInsets.only(
@@ -144,46 +185,26 @@ class _ExercisePageState extends State<ExercisePage> {
                 ),
               ),
               Spacer(),
+
+              // EDIT BUTTON
               IconButton(onPressed: () {
                 titlecontroller.text = data.name;
                 musclecontroller.text = data.muscle;
-                desccontroller.text = data.desc!;
+                desccontroller.text = data.desc ?? "";
                 showDialog(context: context, builder: (context) =>
-                AlertDialog(
-                  title: Text('Edit', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),),
-                  content: Container(
-                    child: Wrap(
-                      children: [
-                        TextField(
-                          maxLength: 14,
-                          autofocus: true,
-                          decoration: InputDecoration(hintText: 'Title'),
-                          controller: titlecontroller,
-                        ),
-                        TextField(
-                          maxLength: 14,
-                          autofocus: true,
-                          decoration: InputDecoration(hintText: 'Targeted Muscle'),
-                          controller: musclecontroller,
-                        ),
-                        TextField(
-                          maxLength: 100,
-                          minLines: 1,
-                          maxLines: 3,
-                          autofocus: true,
-                          decoration: InputDecoration(hintText: 'Description(optional)'),
-                          controller: desccontroller,
-                        ),
-                      ],
-                    ),
-                  ),
+                AddEditExerciseDialog(
+                  titlecontroller: titlecontroller,
+                  musclecontroller: musclecontroller,
+                  desccontroller: desccontroller,
+                  title: 'Edit',
+                  icon: Icon(Icons.edit),
                   actions: [
                     TextButton(
                       onPressed: () {
                         Navigator.pop(context);
                         _clearAll();
                       },
-                      child: Text('Cancel'),
+                      child: dialogButton(text: 'Cancel',),
                     ),
                     TextButton(
                       onPressed: () async {
@@ -194,24 +215,30 @@ class _ExercisePageState extends State<ExercisePage> {
                             desccontroller.text);
                         setState(() {});
                       },
-                      child: Text('Save'),),
-                  ],
-                ));
+                      child: dialogButton(text: 'Save',),),
+                  ],),
+                );
                 }, icon: Icon(Icons.edit), iconSize: 25,),
               SizedBox(width: 3,),
+
+              // DELETE BUTTON
               IconButton(onPressed: () async {
                 showDialog(
                     context: context, builder: (context) =>
                     AlertDialog(
                       title: Text('Warning!', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),),
                       content:  Text('Procede to delete exercise ${data.name}?'),
+                      actionsAlignment: MainAxisAlignment.center,
                       actions: [
-                        TextButton(onPressed: () { Navigator.pop(context); }, child: Text('No'),),
+                        TextButton(onPressed: () { Navigator.pop(context); },
+                          child: dialogButton(text: 'No',),),
                         TextButton(onPressed: () async {
                           await MongoDatabase.deleteExercise(data);
                           Navigator.pop(context);
                           setState(() {});
-                          }, child: Text('Yes'),),
+                          },
+                          child: dialogButton(text: 'Yes',),
+                        ),
                       ],
                 ));
                 }, icon: Icon(Icons.delete), iconSize: 25,),
@@ -222,56 +249,6 @@ class _ExercisePageState extends State<ExercisePage> {
       ),
     );
   }
-  Future addExercise() => showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Text('Add Exercise', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),),
-      content: Container(
-        child: Wrap(
-          children: [
-            TextField(
-              maxLength: 14,
-              autofocus: true,
-              decoration: InputDecoration(hintText: 'Title'),
-              controller: titlecontroller,
-            ),
-            TextField(
-              maxLength: 14,
-              autofocus: true,
-              decoration: InputDecoration(hintText: 'Targeted Muscle'),
-              controller: musclecontroller,
-            ),
-            TextField(
-              maxLength: 100,
-              minLines: 1,
-              maxLines: 3,
-              autofocus: true,
-              decoration: InputDecoration(hintText: 'Description(optional)'),
-              controller: desccontroller,
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.pop(context);
-            _clearAll();
-          },
-          child: Text('Cancel'),
-        ),
-        TextButton(
-          onPressed: () async {
-            await _insertExercise(
-              titlecontroller.text.toString(),
-              musclecontroller.text.toString(),
-              desccontroller.text);
-            setState(() {});
-          },
-          child: Text('Salvar'),),
-      ],
-    ),
-  );
   Future<void> _updateExercise(M.ObjectId id, String title, String muscle, String? desc) async {
     if (desc == "") { desc = null; }
     final updateExercise = ExerciseModel(id: id, name: title, muscle: muscle, desc: desc);
@@ -284,7 +261,6 @@ class _ExercisePageState extends State<ExercisePage> {
     if (desc == "") { desc = null; }
     final data = ExerciseModel(id: _id, name: title, muscle: muscle, desc: desc);
     await MongoDatabase.insertExercise(data);
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Done!')));
     _clearAll();
     Navigator.pop(context);
   }
