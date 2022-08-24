@@ -1,6 +1,6 @@
 import 'package:app/screens/calendarpage.dart';
 import 'package:app/screens/exercisepage.dart';
-import 'package:app/screens/planspage.dart';
+import 'package:app/screens/workoutspage.dart';
 import 'package:app/screens/progressionpage.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -25,7 +25,7 @@ class _MyAppState extends State<MyApp> {
   int currentIndex = 2;
   final screens = [
     ExercisePage(),
-    PlansPage(),
+    WorkoutsPage(),
     HomePage(),
     CalendarPage(),
     ProgressionPage(),
