@@ -24,11 +24,11 @@ class _MyAppState extends State<MyApp> {
 
   int currentIndex = 2;
   final screens = [
-    ExercisePage(),
-    WorkoutsPage(),
-    HomePage(),
-    CalendarPage(),
-    ProgressionPage(),
+    const ExercisePage(),
+    const WorkoutsPage(),
+    const HomePage(),
+    const CalendarPage(),
+    const ProgressionPage(),
   ];
 
   @override
@@ -48,13 +48,13 @@ class _MyAppState extends State<MyApp> {
         bottomNavigationBar: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
           unselectedItemColor: Colors.white,
-          selectedItemColor: Color(0xFF67DFDD),
+          selectedItemColor: const Color(0xFF67DFDD),
           showUnselectedLabels: false,
           elevation: 5,
-          backgroundColor: Color(0xFF404040),
+          backgroundColor: const Color(0xFF404040),
           currentIndex: currentIndex,
           onTap: (index) => setState(() => currentIndex = index),
-          items: [
+          items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.fitness_center, size: 30,),
               label: 'Exercises',

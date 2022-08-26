@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:mongo_dart/mongo_dart.dart' as M;
 import '../models/exerciseModel.dart';
 import '../dbHelper/mongodb.dart';
+import '../widgets/dialogButton.dart';
 
 class ExercisePage extends StatefulWidget {
   const ExercisePage({Key? key}) : super(key: key);

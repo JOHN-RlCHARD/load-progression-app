@@ -1,9 +1,10 @@
+import 'package:expandable/expandable.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
 import '../dbHelper/mongodb.dart';
 import '../models/planmodel.dart';
-import '../widgets.dart';
+import '../widgets/addWorkoutPlan.dart';
+import '../widgets/dataTable.dart';
 
 class WorkoutsPage extends StatefulWidget {
   const WorkoutsPage({Key? key}) : super(key: key);
@@ -13,6 +14,27 @@ class WorkoutsPage extends StatefulWidget {
 }
 
 class _WorkoutsPageState extends State<WorkoutsPage> {
+
+  late TextEditingController titlecontroller;
+  late TextEditingController desccontroller;
+  late TextEditingController musclecontroller;
+
+  @override
+  void initState() {
+    super.initState();
+    titlecontroller = TextEditingController();
+    desccontroller = TextEditingController();
+    musclecontroller = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    titlecontroller.dispose();
+    desccontroller.dispose();
+    musclecontroller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -86,7 +108,15 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
                   ),
                   child: IconButton(
                       icon: Icon(Icons.add, color: Colors.white,),
-                      onPressed: () {}
+                      onPressed: () {
+                        showDialog(context: context, builder: (context) =>
+                        AddWorkoutPlan(
+                            title: 'Add Plan',
+                            icon: Icon(Icons.edit),
+                            titlecontroller: titlecontroller,
+                            musclecontroller: musclecontroller),
+                        );
+                      }
                   )
               ),
             ),
@@ -97,30 +127,33 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
 
   Widget planCard(PlanModel data) {
     return Container(
-      margin: EdgeInsets.only(
-          bottom: 14,
-          left: 10,
-          right: 10
-      ),
-      width: double.infinity,
-      padding: EdgeInsets.fromLTRB(20,10,20,20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 4,
-            offset: Offset(0.0,4.0),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
+        margin: EdgeInsets.only(
+            bottom: 14,
+            left: 10,
+            right: 10
+        ),
+        width: double.infinity,
+        padding: EdgeInsets.fromLTRB(20,10,20,20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 4,
+              offset: Offset(0.0,4.0),
+            ),
+          ],
+        ),
+        child: ExpandableNotifier(
+          child: ExpandablePanel(
+            theme: const ExpandableThemeData(
+                tapBodyToCollapse: false,
+                tapBodyToExpand: true,
+            ),
+            header: Row(
+              children: [
+                Container(
                 width: 160,
                 child: Text(
                   "${data.title}",
@@ -138,41 +171,20 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
 
               // DELETE BUTTON
               IconButton(onPressed: () async {}, icon: Icon(Icons.delete), iconSize: 25,),
-            ],
+              ],
+            ),
+            collapsed: Text("Targeted muscles: "+data.muscles, style: TextStyle(fontSize: 16), overflow: TextOverflow.ellipsis,),
+            expanded: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Targeted muscles: "+data.muscles, style: TextStyle(fontSize: 16),),
+                buildDataTable(data.exercises),
+              ],
+            ),
           ),
-          Text("Targeted muscles: "+data.muscles, style: TextStyle(fontSize: 16),),
-
-          buildDataTable(data.exercises),
-          
-        ],
-      ),
-    );
+        ),
+      );
   }
-  
-  Widget buildDataTable( List<String> exercises ) {
-    final columns = ["Sets", "Reps", "Exercise"];
-    
-    return DataTable(
-        columns: getColumns(columns),
-        rows: getRows(exercises),
-    );
-  }
-
-  List<DataRow> getRows(List<String> rows) => rows.map((String row) {
-    var split = row.split("-");
-    var sets = split[0];
-    var reps = split[1];
-    var exercise = split[2];
-    final cells = [sets, reps, exercise];
-    return DataRow(cells: getCells(cells));
-  }).toList();
-
-  List<DataCell> getCells(List<dynamic> cells) =>
-  cells.map((data) => DataCell(Text('$data'))).toList();
-
-  List<DataColumn> getColumns(List<String> columns) => columns
-      .map((String column) => DataColumn(label: Text(column)))
-      .toList();
   
   void _clearAll(){
 
