@@ -109,14 +109,9 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
                   child: IconButton(
                       icon: Icon(Icons.add, color: Colors.white,),
                       onPressed: () {
-                        showDialog(context: context, builder: (context) =>
-                        AddWorkoutPlan(
-                            title: 'Add Plan',
-                            icon: Icon(Icons.edit),
-                            titlecontroller: titlecontroller,
-                            musclecontroller: musclecontroller),
-                        );
-                      }
+                        Navigator.push( context,
+                          MaterialPageRoute(
+                              builder: (context) => AddWorkoutPlan()),); }
                   )
               ),
             ),
@@ -184,10 +179,6 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
           ),
         ),
       );
-  }
-  
-  void _clearAll(){
-
   }
 }
 

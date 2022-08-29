@@ -1,112 +1,137 @@
+import 'package:app/widgets/dataTable.dart';
+import 'package:app/widgets/dialogButton.dart';
 import 'package:flutter/material.dart';
 
-import 'dialogButton.dart';
-
 class AddWorkoutPlan extends StatefulWidget {
-
-  late List<String>? exerciseList = [];
-  final String title;
-  final Icon icon;
-  final TextEditingController titlecontroller;
-  final TextEditingController musclecontroller;
-
-  AddWorkoutPlan({Key? key, required this.title, required this.icon, required this.titlecontroller, required this.musclecontroller, this.exerciseList}) : super(key: key);
+  AddWorkoutPlan({Key? key,}) : super(key: key);
 
   @override
   State<AddWorkoutPlan> createState() => _AddWorkoutPlanState();
 }
 
 class _AddWorkoutPlanState extends State<AddWorkoutPlan> {
-  late TextEditingController exerciseName;
-  late TextEditingController exerciseSets;
-  late TextEditingController exerciseReps;
+  late TextEditingController titleController;
+  late TextEditingController muscleController;
+  late TextEditingController nameController;
+  late TextEditingController setsController;
+  late TextEditingController repsController;
+  late List<String> exercises = [];
+
+  @override
+  void initState() {
+    super.initState();
+    titleController = TextEditingController();
+    muscleController = TextEditingController();
+    nameController = TextEditingController();
+    repsController = TextEditingController();
+    setsController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    titleController.dispose();
+    muscleController.dispose();
+    nameController.dispose();
+    setsController.dispose();
+    repsController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Wrap(
-        alignment: WrapAlignment.center,
-        children: [
-          Text(widget.title, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),),
-          SizedBox(width: 5,),
-          widget.icon,
-        ],
-      ),
-      content: Container(
-        child: Wrap(
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
           children: [
-            TextField(
-              maxLength: 14,
-              autofocus: true,
-              decoration: InputDecoration(hintText: 'Title',),
-              controller: widget.titlecontroller,
+            SizedBox(height: 30,),
+            Text("Add Plan", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(70, 20, 70, 20),
+              child: TextField(
+                maxLength: 14,
+                autofocus: true,
+                decoration: InputDecoration(hintText: 'Title',),
+                controller: titleController,
+              ),
             ),
-            TextField(
-              maxLength: 14,
-              autofocus: true,
-              decoration: InputDecoration(hintText: 'Targeted Muscle'),
-              controller: widget.musclecontroller,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(70, 0, 70, 20),
+              child: TextField(
+                maxLength: 14,
+                autofocus: true,
+                decoration: InputDecoration(hintText: 'Targeted Muscles'),
+                controller: muscleController,
+              ),
             ),
-            Text('Exercises'),
-            FutureBuilder(
-                builder: (context, snapshot) {
-                  return ListView.builder(
-                    itemCount: widget.exerciseList?.length,
-                    itemBuilder: (context, index) {
-                      if (widget.exerciseList?.length==0) {
-                        return Text('no data');
-                      }
-                      return Text(snapshot.toString());
-                    });
-                }),
+            Expanded(
+              child: Builder(
+                  builder: (context) {
+                    if (exercises.isEmpty) {
+                      return Center(child: Text("No data"));
+                    }
+                    return ListView.builder(
+                      itemCount: exercises.length,
+                      itemBuilder: (context, index) {
+                        var split = exercises[index].split("-");
+                        var sets = split[0];
+                        var reps = split[1];
+                        var name = split[2];
+                        return Row(
+                          children: [
+                            Text(name),
+                            Text(sets),
+                            Text(reps),
+                          ],
+                        );
+                      },
+                    );
+                  }),
+            ),
             TextButton(
-                onPressed: () {
-                  showDialog(context: context, builder: (context) =>
+              child: Text("+ Add Exercise"),
+              onPressed: () {
+              showDialog(context: context, builder: (context) =>
                   AlertDialog(
+                    title: Text("Add Exercise"),
                     content: Column(
                       children: [
                         TextField(
-                          autofocus: true,
-                          decoration: InputDecoration(hintText: 'Title',),
-                          controller: exerciseName,
+                          decoration: InputDecoration(hintText: 'name'),
+                          controller: nameController,
                         ),
                         TextField(
-                          autofocus: true,
-                          decoration: InputDecoration(hintText: 'Title',),
-                          controller: exerciseSets,
+                          decoration: InputDecoration(hintText: 'reps'),
+                          controller: repsController,
                         ),
                         TextField(
-                          autofocus: true,
-                          decoration: InputDecoration(hintText: 'Title',),
-                          controller: exerciseReps,
+                          decoration: InputDecoration(hintText: 'sets'),
+                          controller: setsController,
                         ),
                       ],
                     ),
                     actions: [
                       TextButton(onPressed: () {
-                        widget.exerciseList?.add(exerciseSets.text.toString()+"-"+exerciseReps.text.toString()+"+"+exerciseName.text.toString());
+                        exercises.add(setsController.text.toString()+"-"+
+                            repsController.text.toString()+"-"+
+                            nameController.text.toString());
                         Navigator.pop(context);
+                        _clearAll;
                         setState(() {});
-                        }, child: Text('send')),
+                      },
+                        child: dialogButton(text: "Add",),),
                     ],
                   ));
-                },
-                child: dialogButton(text: '+',))
+            },),
           ],
         ),
       ),
-      actionsAlignment: MainAxisAlignment.center,
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          child: dialogButton(text: 'Cancel',),
-        ),
-        TextButton(
-          onPressed: () {},
-          child: dialogButton(text: 'Save',),),
-      ],
     );
   }
+  void _clearAll() {
+    setsController.clear();
+    repsController.clear();
+    nameController.clear();
+  }
 }
+
+
