@@ -1,0 +1,1 @@
+const MONGO_CONNECTION_URL = "mongodb+srv://john:123abc@cluster0.gbdbfug.mongodb.net/loadprogression?retryWrites=true&w=majority";
