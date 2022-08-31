@@ -1,6 +1,9 @@
-import 'package:app/widgets/dataTable.dart';
+import 'package:app/models/planmodel.dart';
 import 'package:app/widgets/dialogButton.dart';
 import 'package:flutter/material.dart';
+import 'package:mongo_dart/mongo_dart.dart' as M;
+
+import '../dbHelper/mongodb.dart';
 
 class AddWorkoutPlan extends StatefulWidget {
   AddWorkoutPlan({Key? key,}) : super(key: key);
@@ -16,6 +19,8 @@ class _AddWorkoutPlanState extends State<AddWorkoutPlan> {
   late TextEditingController setsController;
   late TextEditingController repsController;
   late List<String> exercises = [];
+  final formKey = GlobalKey<FormState>();
+  final dialogKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -40,34 +45,228 @@ class _AddWorkoutPlanState extends State<AddWorkoutPlan> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Column(
           children: [
             SizedBox(height: 30,),
             Text("Add Plan", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(70, 20, 70, 20),
-              child: TextField(
-                maxLength: 14,
-                autofocus: true,
-                decoration: InputDecoration(hintText: 'Title',),
-                controller: titleController,
+            Form(
+              key: formKey,
+              child: Column(
+                children: [
+                  Padding(
+                  padding: const EdgeInsets.fromLTRB(70, 20, 70, 20),
+                    child: TextFormField(
+                      maxLength: 14,
+                      decoration: InputDecoration(
+                        label: Text('Title'),
+                      ),
+                      controller: titleController,
+                      validator: (value) {
+                        if (value!.isEmpty) {
+                          return 'Enter a Title.';
+                        } else {
+                          return null;
+                        }
+                      },
+                    ),
+                ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(70, 0, 70, 10),
+                    child: TextFormField(
+                      maxLength: 40,
+                      decoration: InputDecoration(
+                        label: Text('Targeted Muscles'),
+                      ),
+                      controller: muscleController,
+                      validator: (value) {
+                        if(value!.isEmpty) {
+                          return 'Enter a Targeted Muscle';
+                        } else if (RegExp(r'^[0-9]+$').hasMatch(value)) {
+                          return 'Enter only letters';
+                        } else {
+                          return null;
+                        }
+                      },
+                    ),
+                  ),
+                ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(70, 0, 70, 20),
-              child: TextField(
-                maxLength: 14,
-                autofocus: true,
-                decoration: InputDecoration(hintText: 'Targeted Muscles'),
-                controller: muscleController,
+
+            TextButton(
+              child: Container(
+                width: 200,
+                height: 47,
+                padding: EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.all(Radius.circular(8)),
+                  color: Color(0xFF404040),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  'Add Exercise +',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontSize: 20),),
               ),
+              onPressed: () {
+                showDialog(context: context, builder: (context) =>
+                    AlertDialog(
+                      title: Wrap(
+                        alignment: WrapAlignment.center,
+                        children: [
+                          Text('Add Exercise', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),),
+                          SizedBox(width: 5,),
+                          Icon(Icons.add),
+                        ],
+                      ),
+                      content: Form(
+                        key: dialogKey,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            TextFormField(
+                              validator: (value) {
+                                if(value!.isEmpty) {
+                                  return 'Enter a name.';
+                                } else {
+                                return null;
+                              }
+                            },
+                              maxLength: 24,
+                              decoration: InputDecoration(
+                                label: Text('Name'),
+                              ),
+                              controller: nameController,
+                            ),
+                            SizedBox(height: 10,),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 120,
+                                  child: TextFormField(
+                                    validator: (value) {
+                                      if(value!.isEmpty || RegExp(r'^[a-z A-Z]+$').hasMatch(value)) {
+                                        return 'Enter a number';
+                                      } else {
+                                        return null;
+                                      }
+                                    },
+                                    keyboardType: TextInputType.number,
+                                    maxLength: 2,
+                                    decoration: InputDecoration(
+                                      label: Text('Sets'),
+                                    ),
+                                    controller: setsController,
+                                  ),
+                                ),
+                                SizedBox(width: 10,),
+                                Container(
+                                  width: 120,
+                                  child: TextFormField(
+                                    validator: (value) {
+                                      if(value!.isEmpty || RegExp(r'^[a-z A-Z]+$').hasMatch(value)) {
+                                        return 'Enter a number';
+                                      } else {
+                                        return null;
+                                      }
+                                    },
+                                    keyboardType: TextInputType.number,
+                                    maxLength: 3,
+                                    decoration: InputDecoration(
+                                      label: Text('Reps'),
+                                    ),
+                                    controller: repsController,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      actionsAlignment: MainAxisAlignment.center,
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                           Navigator.pop(context);
+                           setsController.clear();
+                           repsController.clear();
+                           nameController.clear();
+                           FocusManager.instance.primaryFocus?.unfocus();
+                          },
+                            child: dialogButton(text: 'Cancel',),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            if (dialogKey.currentState!.validate()) {
+                              exercises.add(setsController.text.toString()+"-"+
+                                  repsController.text.toString()+"-"+
+                                  nameController.text.toString());
+                              Navigator.pop(context);
+                              setState(() {});
+                              setsController.clear();
+                              repsController.clear();
+                              nameController.clear();
+                              FocusManager.instance.primaryFocus?.unfocus();
+                            }
+                          },
+                          child: dialogButton(text: "Add",),
+                        ),
+                      ],
+                    ),
+                );
+              },
             ),
+            SizedBox(height: 20,),
+            Builder(
+                builder: (context) {
+                  if (exercises.isNotEmpty) {
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 150,
+                          child: Text(
+                            'Exercise',
+                            style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        Container(
+                          alignment: Alignment.center,
+                          width: 50,
+                          child: Text(
+                            'Sets',
+                            style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        Container(
+                          alignment: Alignment.center,
+                          width: 50,
+                          child: Text(
+                            'Reps',
+                            style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        Container(
+                          width: 50,
+                          child: Text(''),
+                        ),
+                      ],
+                    );
+                  } else {
+                    return SizedBox();
+                  }
+            }),
+            SizedBox(height: 10,),
             Expanded(
               child: Builder(
                   builder: (context) {
                     if (exercises.isEmpty) {
-                      return Center(child: Text("No data"));
+                      return Center(child: Text(""));
                     }
                     return ListView.builder(
                       itemCount: exercises.length,
@@ -76,61 +275,88 @@ class _AddWorkoutPlanState extends State<AddWorkoutPlan> {
                         var sets = split[0];
                         var reps = split[1];
                         var name = split[2];
-                        return Row(
+
+                        return Column(
                           children: [
-                            Text(name),
-                            Text(sets),
-                            Text(reps),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  width: 150,
+                                  child: Text(name),
+                                ),
+                                Container(
+                                  alignment: Alignment.center,
+                                  width: 50,
+                                  child: Text(sets),
+                                ),
+                                Container(
+                                  alignment: Alignment.center,
+                                  width: 50,
+                                  child: Text(reps),
+                                ),
+                                Container(
+                                  alignment: Alignment.center,
+                                  width: 50,
+                                  child: TextButton(onPressed: () {
+                                    exercises.remove(exercises[index]);
+                                    setState(() {});
+                                    },
+                                    child: Icon(Icons.delete, color: Colors.black, size: 17,),
+                                  ),
+                                )
+                              ],
+                            ),
+                            SizedBox(height: 5,),
                           ],
                         );
                       },
                     );
                   }),
             ),
-            TextButton(
-              child: Text("+ Add Exercise"),
-              onPressed: () {
-              showDialog(context: context, builder: (context) =>
-                  AlertDialog(
-                    title: Text("Add Exercise"),
-                    content: Column(
-                      children: [
-                        TextField(
-                          decoration: InputDecoration(hintText: 'name'),
-                          controller: nameController,
-                        ),
-                        TextField(
-                          decoration: InputDecoration(hintText: 'reps'),
-                          controller: repsController,
-                        ),
-                        TextField(
-                          decoration: InputDecoration(hintText: 'sets'),
-                          controller: setsController,
-                        ),
-                      ],
-                    ),
-                    actions: [
-                      TextButton(onPressed: () {
-                        exercises.add(setsController.text.toString()+"-"+
-                            repsController.text.toString()+"-"+
-                            nameController.text.toString());
-                        Navigator.pop(context);
-                        _clearAll;
-                        setState(() {});
-                      },
-                        child: dialogButton(text: "Add",),),
-                    ],
-                  ));
-            },),
+            Padding(
+              padding: const EdgeInsets.all(15),
+              child: TextButton(
+                onPressed: () {
+                  if(exercises.isEmpty) {
+                    Scaffold.of(context).showSnackBar(SnackBar(content: Text('Insert at least 1 Exercise!')));
+                  } else if (formKey.currentState!.validate()) {
+                    _insertPlan(titleController.text.toString(), muscleController.text.toString(), exercises);
+                  }
+                },
+                child: Container(
+                  width: 200,
+                  height: 47,
+                  padding: EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.all(Radius.circular(8)),
+                    color: Color(0xFF404040),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    'Save Workout Plan',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontSize: 20),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
-  void _clearAll() {
-    setsController.clear();
-    repsController.clear();
-    nameController.clear();
+
+  Future<void> _insertPlan(String title, String muscle, List<String> exercises) async {
+    var _id = M.ObjectId();
+    final data = PlanModel(id: _id, muscles: muscle, title: title, status: false, exercises: exercises);
+    await MongoDatabase.insertPlan(data);
+    titleController.clear();
+    muscleController.clear();
+    Navigator.pop(context);
+    setState(() {});
   }
 }
 

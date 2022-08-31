@@ -1,4 +1,5 @@
 import 'package:app/models/exerciseModel.dart';
+import 'package:app/models/planmodel.dart';
 import 'package:mongo_dart/mongo_dart.dart';
 import 'constant.dart';
 
@@ -39,6 +40,20 @@ class MongoDatabase {
   static getPlans() async {
     final arrData = await db.collection("workouts").find().toList();
     return arrData;
+  }
+
+  static insertPlan(PlanModel data) async {
+    try {
+      var result = await db.collection("workouts").insertOne(data.toJson());
+      if (result.isSucces) {
+        return "Data Inserted";
+      } else {
+        return "Something went wrong";
+      }
+    } catch(e) {
+      print(e.toString());
+      return e.toString();
+    }
   }
 
   static getExercises() async {

@@ -2,6 +2,7 @@ import 'package:app/screens/calendarpage.dart';
 import 'package:app/screens/exercisepage.dart';
 import 'package:app/screens/workoutspage.dart';
 import 'package:app/screens/progressionpage.dart';
+import 'package:app/widgets/my_input_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:app/screens/homepage.dart';
@@ -38,7 +39,8 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
           textTheme: GoogleFonts.inriaSerifTextTheme(
             Theme.of(context).textTheme,
-          )
+          ),
+        inputDecorationTheme: MyInputTheme().theme(),
       ),
       home: Scaffold(
         body: IndexedStack(
