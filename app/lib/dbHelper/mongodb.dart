@@ -37,6 +37,10 @@ class MongoDatabase {
     await db.collection("exercises").remove(where.id(data.id));
   }
 
+  static deletePlan(PlanModel data) async {
+    await db.collection("workouts").remove(where.id(data.id));
+  }
+
   static getPlans() async {
     final arrData = await db.collection("workouts").find().toList();
     return arrData;

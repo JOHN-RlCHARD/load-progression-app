@@ -1,4 +1,6 @@
+import 'package:app/main.dart';
 import 'package:app/models/planmodel.dart';
+import 'package:app/screens/workoutspage.dart';
 import 'package:app/widgets/dialogButton.dart';
 import 'package:flutter/material.dart';
 import 'package:mongo_dart/mongo_dart.dart' as M;
@@ -192,11 +194,11 @@ class _AddWorkoutPlanState extends State<AddWorkoutPlan> {
                       actions: [
                         TextButton(
                           onPressed: () {
+                            FocusManager.instance.primaryFocus?.unfocus();
                            Navigator.pop(context);
                            setsController.clear();
                            repsController.clear();
                            nameController.clear();
-                           FocusManager.instance.primaryFocus?.unfocus();
                           },
                             child: dialogButton(text: 'Cancel',),
                         ),
@@ -214,12 +216,12 @@ class _AddWorkoutPlanState extends State<AddWorkoutPlan> {
                                   sets: int.tryParse(setsController.text)!,
                                   reps: int.tryParse(repsController.text)!,
                               ));
+                              FocusManager.instance.primaryFocus?.unfocus();
                               Navigator.pop(context);
                               setState(() {});
                               setsController.clear();
                               repsController.clear();
                               nameController.clear();
-                              FocusManager.instance.primaryFocus?.unfocus();
                             }
                           },
                           child: dialogButton(text: "Add",),
@@ -365,6 +367,7 @@ class _AddWorkoutPlanState extends State<AddWorkoutPlan> {
     Navigator.pop(context);
     setState(() {});
   }
+
 }
 
 

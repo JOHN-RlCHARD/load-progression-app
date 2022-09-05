@@ -1,3 +1,4 @@
+import 'package:app/widgets/dialogButton.dart';
 import 'package:expandable/expandable.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -165,7 +166,22 @@ class _WorkoutsPageState extends State<WorkoutsPage> {
               SizedBox(width: 3,),
 
               // DELETE BUTTON
-              IconButton(onPressed: () async {}, icon: Icon(Icons.delete), iconSize: 25,),
+              IconButton(onPressed: () async {
+                showDialog(context: context, builder: (context) => AlertDialog(
+                  title: Text("Warning!"),
+                  content: Text("Procede to delete workout ${data.title}?"),
+                  actions: [
+                    TextButton(onPressed: () {
+                      Navigator.pop(context);
+                      }, child: dialogButton(text: 'Cancel',)),
+                    TextButton(onPressed: () async {
+                      await MongoDatabase.deletePlan(data);
+                      Navigator.pop(context);
+                      setState(() {});
+                      }, child: dialogButton(text: 'Delete',)),
+                  ],
+                ));
+                }, icon: Icon(Icons.delete), iconSize: 25,),
               ],
             ),
             collapsed: Text("Targeted muscles: "+data.muscles, style: TextStyle(fontSize: 16), overflow: TextOverflow.ellipsis,),
