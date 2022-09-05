@@ -1,6 +1,7 @@
+import 'package:app/models/planmodel.dart';
 import 'package:flutter/material.dart';
 
-Widget buildDataTable( List<String> exercises ) {
+Widget buildDataTable( List<Exercise> exercises ) {
   final columns = ["Exercise", "Sets", "Reps"];
 
   if(exercises==null) {
@@ -13,11 +14,10 @@ Widget buildDataTable( List<String> exercises ) {
   );
 }
 
-List<DataRow> getRows(List<String> rows) => rows.map((String row) {
-  var split = row.split("-");
-  var sets = split[0];
-  var reps = split[1];
-  var exercise = split[2];
+List<DataRow> getRows(List<Exercise> rows) => rows.map((Exercise row) {
+  var sets = row.sets.toString();
+  var reps = row.reps.toString();
+  var exercise = row.name.toString();
   final cells = [exercise, sets, reps];
   return DataRow(cells: getCells(cells));
 }).toList();

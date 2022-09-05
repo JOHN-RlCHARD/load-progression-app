@@ -18,7 +18,7 @@ class _AddWorkoutPlanState extends State<AddWorkoutPlan> {
   late TextEditingController nameController;
   late TextEditingController setsController;
   late TextEditingController repsController;
-  late List<String> exercises = [];
+  late List<Exercise> exercises = [];
   final formKey = GlobalKey<FormState>();
   final dialogKey = GlobalKey<FormState>();
 
@@ -203,9 +203,17 @@ class _AddWorkoutPlanState extends State<AddWorkoutPlan> {
                         TextButton(
                           onPressed: () {
                             if (dialogKey.currentState!.validate()) {
-                              exercises.add(setsController.text.toString()+"-"+
-                                  repsController.text.toString()+"-"+
-                                  nameController.text.toString());
+                              try {
+                                int.tryParse(setsController.text);
+                                int.tryParse(repsController.text);
+                              } catch(e) {
+                                return print("Typing error");
+                              }
+                              exercises.add(Exercise(
+                                  name: nameController.text.toString(),
+                                  sets: int.tryParse(setsController.text)!,
+                                  reps: int.tryParse(repsController.text)!,
+                              ));
                               Navigator.pop(context);
                               setState(() {});
                               setsController.clear();
@@ -271,10 +279,9 @@ class _AddWorkoutPlanState extends State<AddWorkoutPlan> {
                     return ListView.builder(
                       itemCount: exercises.length,
                       itemBuilder: (context, index) {
-                        var split = exercises[index].split("-");
-                        var sets = split[0];
-                        var reps = split[1];
-                        var name = split[2];
+                        var sets = exercises[index].sets;
+                        var reps = exercises[index].reps;
+                        var name = exercises[index].name;
 
                         return Column(
                           children: [
@@ -288,12 +295,12 @@ class _AddWorkoutPlanState extends State<AddWorkoutPlan> {
                                 Container(
                                   alignment: Alignment.center,
                                   width: 50,
-                                  child: Text(sets),
+                                  child: Text(sets.toString()),
                                 ),
                                 Container(
                                   alignment: Alignment.center,
                                   width: 50,
-                                  child: Text(reps),
+                                  child: Text(reps.toString()),
                                 ),
                                 Container(
                                   alignment: Alignment.center,
@@ -349,7 +356,7 @@ class _AddWorkoutPlanState extends State<AddWorkoutPlan> {
     );
   }
 
-  Future<void> _insertPlan(String title, String muscle, List<String> exercises) async {
+  Future<void> _insertPlan(String title, String muscle, List<Exercise> exercises) async {
     var _id = M.ObjectId();
     final data = PlanModel(id: _id, muscles: muscle, title: title, status: false, exercises: exercises);
     await MongoDatabase.insertPlan(data);
